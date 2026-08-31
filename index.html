@@ -2,8 +2,9 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1400">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>블리치 프로필 카드 메이커</title>
+  <!-- 웹폰트(Pretendard & KoPub 바탕) 및 캡처 라이브러리 -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-kopub@1.0/kopubbatang.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -27,14 +28,12 @@
       gap: 30px;
       justify-content: center;
       align-items: flex-start;
-      /* 모바일에서 좁아져 카드나 패널이 아래로 흘러내리지 않도록 최소 너비 고정 */
-      min-width: 1400px;
+      overflow-x: hidden;
     }
 
     /* 좌측 입력 패널 */
     .controls {
       width: 360px;
-      flex-shrink: 0;
       background: #fff;
       padding: 24px;
       border-radius: 16px;
@@ -44,6 +43,7 @@
       gap: 16px;
       max-height: 90vh;
       overflow-y: auto;
+      flex-shrink: 0;
     }
     .controls h2 { margin: 0; font-size: 18px; color: #111; }
     
@@ -224,10 +224,18 @@
       color: #334155;
     }
 
-    /* 우측 카드 영역 (980px 고정) */
+    /* 카드 래퍼 (모바일 자동 축소 스케일러) */
+    .card-scaler {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      transform-origin: top center;
+    }
+
+    /* 우측 카드 본체 (규격 고정 980px) */
     #card {
       width: 980px;
-      flex-shrink: 0;
+      min-width: 980px;
       background: #ffffff;
       border-radius: 20px;
       overflow: hidden;
@@ -235,6 +243,21 @@
       display: flex;
       flex-direction: column;
       position: relative;
+    }
+
+    /* 모바일 반응형 레이아웃 */
+    @media (max-width: 1024px) {
+      body {
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 10px;
+        gap: 24px;
+      }
+      .controls {
+        width: 100%;
+        max-width: 500px;
+        max-height: none;
+      }
     }
 
     /* 카드 상단 */
@@ -420,7 +443,6 @@
       flex-direction: column;
       gap: 16px;
       height: 100%;
-      position: relative;
     }
 
     .gallery-column {
@@ -454,3 +476,960 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 11px;
+      aspect-ratio: 1/1.1;
+      position: relative;
+    }
+    
+    /* 이미지 Pan/Zoom 스타일 */
+    .pan-zoom-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: grab;
+      touch-action: none;
+    }
+    .pan-zoom-img {
+      max-width: none;
+      user-select: none;
+      pointer-events: auto;
+      transform-origin: center center;
+    }
+
+    .slot-caption {
+      position: absolute;
+      bottom: 6px;
+      left: 0;
+      width: 100%;
+      background: transparent;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 12px;
+      text-align: center;
+      padding: 0;
+      letter-spacing: -0.3px;
+      word-break: keep-all;
+      pointer-events: none;
+      z-index: 10;
+      text-shadow: 
+        -1px -1px 0 rgba(0, 0, 0, 0.8),
+         1px -1px 0 rgba(0, 0, 0, 0.8),
+        -1px  1px 0 rgba(0, 0, 0, 0.8),
+         1px  1px 0 rgba(0, 0, 0, 0.8),
+         0 2px 4px rgba(0, 0, 0, 0.6);
+    }
+
+    /* 권두시 / 명대사 영역 */
+    .poem-container {
+      padding: 4px 12px 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .poem-text {
+      margin: 0;
+      font-family: 'KoPub Batang', 'Batang', serif;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #3b3b3b;
+      letter-spacing: -0.2px;
+      word-break: keep-all;
+      white-space: pre-wrap;
+      font-style: normal;
+    }
+    .poem-text::before {
+      content: '“ ';
+      font-family: 'KoPub Batang', serif;
+      color: var(--main-color);
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .poem-text::after {
+      content: ' ”';
+      font-family: 'KoPub Batang', serif;
+      color: var(--main-color);
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    /* 우측 최하단 구석 크레딧 */
+    .card-credit {
+      position: absolute;
+      bottom: 8px;
+      right: 14px;
+      font-size: 10px;
+      color: #cbd5e1;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* 스티커 스타일 */
+    .sticker-item {
+      position: absolute;
+      z-index: 50;
+      cursor: move;
+      user-select: none;
+      display: inline-block;
+      line-height: 0;
+      touch-action: none;
+    }
+    .sticker-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+    }
+    .sticker-item.selected {
+      outline: 1.5px dashed var(--main-color);
+    }
+    .sticker-delete-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 20px;
+      height: 20px;
+      background: #ff4757;
+      color: white;
+      border: 1px solid #fff;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      line-height: 1;
+    }
+    .sticker-resize-handle {
+      position: absolute;
+      bottom: -6px;
+      right: -6px;
+      width: 14px;
+      height: 14px;
+      background: var(--main-color);
+      border: 2px solid white;
+      border-radius: 50%;
+      display: none;
+      cursor: nwse-resize;
+    }
+    .sticker-item.selected .sticker-delete-btn,
+    .sticker-item.selected .sticker-resize-handle {
+      display: flex;
+    }
+    .capturing .sticker-item {
+      outline: none !important;
+    }
+    .capturing .sticker-delete-btn,
+    .capturing .sticker-resize-handle {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 좌측 설정 사이드바 -->
+  <div class="controls">
+    <h2>카드 편집</h2>
+
+    <div class="input-box">
+      <label>테마 컬러</label>
+      <input type="color" id="themeInput" value="#5e5e5e">
+    </div>
+
+    <div class="input-box">
+      <label>닉네임 & 아이디</label>
+      <div style="display: flex; gap: 6px;">
+        <input type="text" id="nameIn" value="닉네임" placeholder="닉네임" style="flex: 1.2;">
+        <input type="text" id="handleIn" value="@id_name" placeholder="@아이디" style="flex: 1;">
+      </div>
+    </div>
+
+    <div class="input-box">
+      <label>말풍선 문구</label>
+      <input type="text" id="bubbleIn" value="쿠로사키 이치고, 사신대행이다.">
+    </div>
+
+    <div class="input-box">
+      <label>계정 성향 (선택)</label>
+      <div class="tag-container" id="groupAccount">
+        <button class="tag-btn active" data-v="RT">RT</button>
+        <button class="tag-btn active" data-v="마음">마음</button>
+        <button class="tag-btn active" data-v="소비">소비</button>
+        <button class="tag-btn" data-v="구독">구독</button>
+        <button class="tag-btn" data-v="일상">일상</button>
+        <button class="tag-btn" data-v="그림">그림</button>
+        <button class="tag-btn" data-v="글">글</button>
+        <button class="tag-btn" data-v="기타">기타</button>
+      </div>
+    </div>
+
+    <div class="input-box">
+      <label>cp 성향 (선택)</label>
+      <div class="tag-container" id="groupFan">
+        <button class="tag-btn active" data-v="NCP">NCP</button>
+        <button class="tag-btn active" data-v="HL">HL</button>
+        <button class="tag-btn" data-v="GL">GL</button>
+        <button class="tag-btn" data-v="BL">BL</button>
+        <button class="tag-btn" data-v="드림">드림</button>
+      </div>
+    </div>
+
+    <!-- 주력 세력 영역 -->
+    <div class="input-box">
+      <label>주력 세력 (선택)</label>
+      <div class="tag-container" id="groupOrg">
+        <button class="tag-btn active" data-v="카라쿠라 마을">카라쿠라 마을</button>
+        <button class="tag-btn active" data-v="호정 13대">호정 13대</button>
+        <button class="tag-btn" data-v="아란칼">아란칼</button>
+        <button class="tag-btn" data-v="퀸시">퀸시</button>
+        <button class="tag-btn" data-v="풀브링거">풀브링거</button>
+        <button class="tag-btn" data-v="바이자드">바이자드</button>
+        <button class="tag-btn" data-v="그외">그외</button>
+      </div>
+    </div>
+
+    <!-- 소비 형태 및 세부 챕터 -->
+    <div class="input-box">
+      <label>소비 형태 (클릭 시 하위 상세 선택지 노출)</label>
+      <div class="tag-container" id="groupConsume">
+        <button class="tag-btn active" data-v="원작">원작</button>
+        <button class="tag-btn active" data-v="애니">애니</button>
+        <button class="tag-btn active" data-v="소설">소설</button>
+        <button class="tag-btn active" data-v="게임">게임</button>
+        <button class="tag-btn" data-v="그외">그외</button>
+      </div>
+
+      <!-- 원작 서브 옵션 -->
+      <div class="sub-tag-panel" id="panelManga">
+        <span class="sub-panel-title">↳ 원작 세부 선택:</span>
+        <div class="tag-container" id="subGroupManga">
+          <button class="tag-btn sub-btn active" data-v="사신대행">사신대행</button>
+          <button class="tag-btn sub-btn active" data-v="소울소사이어티">소울소사이어티</button>
+          <button class="tag-btn sub-btn active" data-v="아란칼">아란칼</button>
+          <button class="tag-btn sub-btn" data-v="사신대행소실">사신대행소실</button>
+          <button class="tag-btn sub-btn active" data-v="천년혈전">천년혈전</button>
+          <button class="tag-btn sub-btn" data-v="옥이명명">옥이명명</button>
+        </div>
+      </div>
+
+      <!-- 애니 서브 옵션 -->
+      <div class="sub-tag-panel" id="panelAnime">
+        <span class="sub-panel-title">↳ 애니/극장판/OVA 세부 선택:</span>
+        <div class="tag-container" id="subGroupAnime">
+          <button class="tag-btn sub-btn" data-v="바운트">바운트</button>
+          <button class="tag-btn sub-btn" data-v="맥효도">맥효도</button>
+          <button class="tag-btn sub-btn" data-v="참백도 이문">참백도 이문</button>
+          <button class="tag-btn sub-btn" data-v="호정13대 침군">호정13대 침군</button>
+          <button class="tag-btn sub-btn" data-v="OVA">OVA</button>
+          <button class="tag-btn sub-btn" data-v="메모리즈 오브 노바디">메모리즈 오브 노바디</button>
+          <button class="tag-btn sub-btn" data-v="다이아몬드 더스트 리벨리온">다이아몬드 더스트 리벨리온</button>
+          <button class="tag-btn sub-btn" data-v="페이드 투 블랙">페이드 투 블랙</button>
+          <button class="tag-btn sub-btn" data-v="지옥편">지옥편</button>
+        </div>
+      </div>
+
+      <!-- 소설 서브 옵션 -->
+      <div class="sub-tag-panel" id="panelNovel">
+        <span class="sub-panel-title">↳ 소설 세부 선택:</span>
+        <div class="tag-container" id="subGroupNovel">
+          <button class="tag-btn sub-btn active" data-v="레터즈">레터즈</button>
+          <button class="tag-btn sub-btn active" data-v="허니디쉬">허니디쉬</button>
+          <button class="tag-btn sub-btn" data-v="스피릿츠">스피릿츠</button>
+          <button class="tag-btn sub-btn" data-v="데스베리">데스베리</button>
+          <button class="tag-btn sub-btn active" data-v="캔피어">캔피어</button>
+          <button class="tag-btn sub-btn" data-v="위두낫">위두낫</button>
+          <button class="tag-btn sub-btn" data-v="그외">그외</button>
+        </div>
+      </div>
+
+      <!-- 게임 서브 옵션 -->
+      <div class="sub-tag-panel" id="panelGame">
+        <span class="sub-panel-title">↳ 게임 세부 선택:</span>
+        <div class="tag-container" id="subGroupGame">
+          <button class="tag-btn sub-btn active" data-v="브레소울">브레소울</button>
+          <button class="tag-btn sub-btn active" data-v="리버소울">리버소울</button>
+          <button class="tag-btn sub-btn" data-v="소울레조">소울레조</button>
+          <button class="tag-btn sub-btn" data-v="미러하이">미러하이</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 텍스트 입력부 -->
+    <div class="input-box">
+      <label>자유란</label>
+      <textarea id="freeIn" rows="4">자유롭게 입력할 수 있는 공간입니다. 성향, 교류 방식, 최애 조합 등을 편하게 적어주세요.</textarea>
+    </div>
+
+    <div class="input-box">
+      <label>NG / 지뢰</label>
+      <textarea id="ngIn" rows="2">소비하지 못하는 요소나 지뢰를 적어주세요.</textarea>
+    </div>
+
+    <div class="input-box">
+      <label>권두시 / 좋아하는 대사 (명조체)</label>
+      <input type="text" id="poemIn" value="우리는 모습을 지니지 않기에 그것을 두려워한다." placeholder="권두시 또는 좋아하는 대사를 입력하세요">
+    </div>
+
+    <!-- 이미지 및 서브 캡션 등록 -->
+    <div class="input-box">
+      <label>사진 & 이름 등록</label>
+      
+      <span style="font-size:11px; color:#888;">원형 프로필</span>
+      <input type="file" id="file_slotProfile" class="file-input" onchange="setImage(event, 'slotProfile')">
+      
+      <span style="font-size:11px; color:#888; margin-top:4px;">대표 이미지</span>
+      <input type="file" id="file_slotMain" class="file-input" onchange="setImage(event, 'slotMain')">
+
+      <span style="font-size:11px; color:#888; margin-top:6px; font-weight: bold;">4분할 서브 이미지 & 텍스트</span>
+      
+      <div class="sub-slot-input">
+        <input type="file" id="file_imgSub1" class="file-input" onchange="setImage(event, 'imgSub1')">
+        <input type="text" id="captionIn1" placeholder="이름 1" value="이치고">
+      </div>
+      <div class="sub-slot-input">
+        <input type="file" id="file_imgSub2" class="file-input" onchange="setImage(event, 'imgSub2')">
+        <input type="text" id="captionIn2" placeholder="이름 2" value="루키아">
+      </div>
+      <div class="sub-slot-input">
+        <input type="file" id="file_imgSub3" class="file-input" onchange="setImage(event, 'imgSub3')">
+        <input type="text" id="captionIn3" placeholder="이름 3" value="오리히메">
+      </div>
+      <div class="sub-slot-input">
+        <input type="file" id="file_imgSub4" class="file-input" onchange="setImage(event, 'imgSub4')">
+        <input type="text" id="captionIn4" placeholder="이름 4" value="렌지">
+      </div>
+
+      <!-- 업로드된 사진 관리 목록 -->
+      <div class="uploaded-img-list" id="uploadedImageList" style="display: none;">
+        <span style="font-size: 11px; font-weight: bold; color: #475569;">등록된 사진 목록</span>
+        <div id="uploadedItems" style="display: flex; flex-direction: column; gap: 4px;"></div>
+      </div>
+    </div>
+
+    <!-- 스티커 추가 섹션 -->
+    <div class="input-box">
+      <label>스티커 추가 (PNG 등 투명 이미지 권장)</label>
+      <input type="file" class="file-input" id="stickerUploader" accept="image/*" onchange="addSticker(event)">
+      <span style="font-size: 11px; color: #888; margin-top: 2px;">
+        * 추가 후 드래그로 위치 이동 / 우하단 점으로 크기 조절
+      </span>
+    </div>
+
+    <button class="btn-download" onclick="saveAsImage()">이미지로 저장하기</button>
+    <button class="btn-reset" onclick="resetForm()">작성 내용 초기화</button>
+  </div>
+
+  <!-- 프로필 카드 미리보기 래퍼 -->
+  <div class="card-scaler" id="cardScaler">
+    <div id="card">
+      <div class="card-header">
+        <div class="header-left">
+          <div class="profile-avatar" id="slotProfile">프로필</div>
+          <div class="speech-box" id="viewBubble">쿠로사키 이치고, 사신대행이다.</div>
+        </div>
+        <div class="header-right">
+          <div class="category-line">
+            <span class="category-title">계정 성향</span>
+            <div class="badge-wrap" id="viewAccount"></div>
+          </div>
+          <div class="category-line">
+            <span class="category-title">cp 성향</span>
+            <div class="badge-wrap" id="viewFan"></div>
+          </div>
+          <!-- 카드 우상단 주력 세력 뱃지 라인 -->
+          <div class="category-line">
+            <span class="category-title">주력 세력</span>
+            <div class="badge-wrap" id="viewOrg"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <div class="info-column">
+          <div class="name-handle-wrap">
+            <h3 class="card-name" id="viewName">닉네임</h3>
+            <span class="card-handle" id="viewHandle">@id_name</span>
+          </div>
+          
+          <div class="consume-box-wrapper">
+            <div class="consume-bar" id="viewConsume"></div>
+          </div>
+
+          <div class="text-box-card free-box">
+            <h4>자유란 /</h4>
+            <p id="viewFree">자유롭게 입력할 수 있는 공간입니다. 성향, 교류 방식, 최애 조합 등을 편하게 적어주세요.</p>
+          </div>
+
+          <div class="text-box-card ng-box">
+            <h4>NG /</h4>
+            <p id="viewNg">소비하지 못하는 요소나 지뢰를 적어주세요.</p>
+          </div>
+        </div>
+
+        <div class="right-column">
+          <div class="gallery-column">
+            <div class="main-slot" id="slotMain">대표 이미지</div>
+            <div class="sub-grid">
+              <div class="sub-slot">
+                <div id="imgSub1" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">1</div>
+                <div class="slot-caption" id="viewCap1">이치고</div>
+              </div>
+              <div class="sub-slot">
+                <div id="imgSub2" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">2</div>
+                <div class="slot-caption" id="viewCap2">루키아</div>
+              </div>
+              <div class="sub-slot">
+                <div id="imgSub3" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">3</div>
+                <div class="slot-caption" id="viewCap3">오리히메</div>
+              </div>
+              <div class="sub-slot">
+                <div id="imgSub4" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">4</div>
+                <div class="slot-caption" id="viewCap4">렌지</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="poem-container">
+            <p class="poem-text" id="viewPoem">우리는 모습을 지니지 않기에 그것을 두려워한다.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카드 전체 최하단 우측 구석 크레딧 -->
+      <div class="card-credit">제작 @clover10y</div>
+    </div>
+  </div>
+
+  <!-- 스크립트 -->
+  <script>
+    const STORAGE_KEY = 'bleach_card_maker_auto_save_final';
+
+    // 모바일/태블릿 화면 크기에 맞춰 카드 자동 스케일 조절
+    function adjustCardScale() {
+      const scaler = document.getElementById('cardScaler');
+      const card = document.getElementById('card');
+      if (!scaler || !card) return;
+
+      const windowWidth = window.innerWidth;
+      // 모바일/태블릿 등 화면이 카드 기본 너비(980px + 여백)보다 작을 때
+      if (windowWidth < 1024) {
+        const availableWidth = windowWidth - 24; // 좌우 여백
+        const scale = Math.min(1, availableWidth / 980);
+        scaler.style.transform = `scale(${scale})`;
+        scaler.style.height = `${card.offsetHeight * scale}px`;
+      } else {
+        scaler.style.transform = 'none';
+        scaler.style.height = 'auto';
+      }
+    }
+
+    window.addEventListener('resize', adjustCardScale);
+    window.addEventListener('load', adjustCardScale);
+
+    // 텍스트 동기화 및 자동 저장
+    const syncText = (inId, outId) => {
+      document.getElementById(inId).addEventListener('input', (e) => {
+        document.getElementById(outId).innerText = e.target.value;
+        saveData();
+        adjustCardScale();
+      });
+    };
+    syncText('nameIn', 'viewName');
+    syncText('handleIn', 'viewHandle');
+    syncText('bubbleIn', 'viewBubble');
+    syncText('freeIn', 'viewFree');
+    syncText('ngIn', 'viewNg');
+    syncText('poemIn', 'viewPoem');
+    syncText('captionIn1', 'viewCap1');
+    syncText('captionIn2', 'viewCap2');
+    syncText('captionIn3', 'viewCap3');
+    syncText('captionIn4', 'viewCap4');
+
+    // 이미지 Pan/Zoom 기능 (마우스 + 모바일 터치 지원)
+    function makeImagePanZoom(container, img) {
+      let isPanning = false;
+      let startX, startY;
+      let posX = 0, posY = 0;
+      let scale = 1;
+
+      function updateTransform() {
+        img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+      }
+
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY * -0.0015;
+        scale = Math.min(Math.max(0.5, scale + delta), 3.5);
+        updateTransform();
+      }, { passive: false });
+
+      // 마우스 이벤트
+      container.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.slot-caption')) return;
+        isPanning = true;
+        startX = e.clientX - posX;
+        startY = e.clientY - posY;
+        container.style.cursor = 'grabbing';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        posX = e.clientX - startX;
+        posY = e.clientY - startY;
+        updateTransform();
+      });
+
+      window.addEventListener('mouseup', () => {
+        isPanning = false;
+        container.style.cursor = 'grab';
+      });
+
+      // 모바일 터치 이벤트
+      container.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.slot-caption')) return;
+        if (e.touches.length === 1) {
+          isPanning = true;
+          startX = e.touches[0].clientX - posX;
+          startY = e.touches[0].clientY - posY;
+        }
+      }, { passive: false });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!isPanning || e.touches.length !== 1) return;
+        posX = e.touches[0].clientX - startX;
+        posY = e.touches[0].clientY - startY;
+        updateTransform();
+      }, { passive: false });
+
+      window.addEventListener('touchend', () => {
+        isPanning = false;
+      });
+    }
+
+    // 사진 관리 리스트
+    const defaultSlotTexts = {
+      'slotProfile': '프로필',
+      'slotMain': '대표 이미지',
+      'imgSub1': '1',
+      'imgSub2': '2',
+      'imgSub3': '3',
+      'imgSub4': '4'
+    };
+
+    const slotDisplayNames = {
+      'slotProfile': '원형 프로필',
+      'slotMain': '대표 이미지',
+      'imgSub1': '서브 1',
+      'imgSub2': '서브 2',
+      'imgSub3': '서브 3',
+      'imgSub4': '서브 4'
+    };
+
+    const uploadedImages = {};
+
+    function updateUploadedList() {
+      const container = document.getElementById('uploadedImageList');
+      const listEl = document.getElementById('uploadedItems');
+      listEl.innerHTML = '';
+
+      const keys = Object.keys(uploadedImages);
+      if (keys.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'flex';
+      keys.forEach(id => {
+        const item = document.createElement('div');
+        item.className = 'uploaded-img-item';
+        item.innerHTML = `
+          <div class="img-item-info">
+            <img class="img-thumb" src="${uploadedImages[id]}">
+            <span class="img-item-name">${slotDisplayNames[id]}</span>
+          </div>
+          <button class="btn-del-slot" onclick="removeSlotImage('${id}')">삭제</button>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function removeSlotImage(targetId) {
+      delete uploadedImages[targetId];
+      const target = document.getElementById(targetId);
+      target.innerHTML = defaultSlotTexts[targetId];
+
+      const input = document.getElementById(`file_${targetId}`);
+      if (input) input.value = '';
+
+      updateUploadedList();
+    }
+
+    function setImage(e, targetId) {
+      const file = e.target.files[0];
+      if (file) {
+        const target = document.getElementById(targetId);
+        const url = URL.createObjectURL(file);
+        uploadedImages[targetId] = url;
+
+        target.innerHTML = `
+          <div class="pan-zoom-container">
+            <img src="${url}" class="pan-zoom-img" draggable="false" style="min-width:100%; min-height:100%; object-fit:cover;">
+          </div>
+        `;
+        const panContainer = target.querySelector('.pan-zoom-container');
+        const img = target.querySelector('.pan-zoom-img');
+        makeImagePanZoom(panContainer, img);
+
+        updateUploadedList();
+      }
+    }
+
+    function linkTags(groupId, viewId) {
+      const group = document.getElementById(groupId);
+      const view = document.getElementById(viewId);
+
+      function update() {
+        view.innerHTML = '';
+        group.querySelectorAll('.tag-btn').forEach(btn => {
+          const badge = document.createElement('span');
+          badge.className = `card-badge ${btn.classList.contains('active') ? 'on' : ''}`;
+          badge.innerText = btn.getAttribute('data-v');
+          view.appendChild(badge);
+        });
+        saveData();
+        adjustCardScale();
+      }
+
+      group.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tag-btn')) {
+          e.target.classList.toggle('active');
+          update();
+        }
+      });
+      update();
+    }
+    linkTags('groupAccount', 'viewAccount');
+    linkTags('groupFan', 'viewFan');
+    linkTags('groupOrg', 'viewOrg');
+
+    function setupComplexConsumeTags() {
+      const mainGroup = document.getElementById('groupConsume');
+      const viewConsume = document.getElementById('viewConsume');
+
+      const mapping = {
+        '원작': { panel: document.getElementById('panelManga'), subGroup: document.getElementById('subGroupManga') },
+        '애니': { panel: document.getElementById('panelAnime'), subGroup: document.getElementById('subGroupAnime') },
+        '소설': { panel: document.getElementById('panelNovel'), subGroup: document.getElementById('subGroupNovel') },
+        '게임': { panel: document.getElementById('panelGame'), subGroup: document.getElementById('subGroupGame') }
+      };
+
+      function render() {
+        viewConsume.innerHTML = '';
+
+        mainGroup.querySelectorAll('.tag-btn').forEach(btn => {
+          const key = btn.getAttribute('data-v');
+          const isActive = btn.classList.contains('active');
+
+          const badge = document.createElement('span');
+          badge.className = `card-badge ${isActive ? 'on' : ''}`;
+          badge.innerText = key;
+          viewConsume.appendChild(badge);
+
+          if (mapping[key]) {
+            mapping[key].panel.style.display = isActive ? 'flex' : 'none';
+          }
+        });
+
+        Object.keys(mapping).forEach(key => {
+          const mainBtn = mainGroup.querySelector(`[data-v="${key}"]`);
+          if (mainBtn && mainBtn.classList.contains('active')) {
+            mapping[key].subGroup.querySelectorAll('.tag-btn').forEach(subBtn => {
+              if (subBtn.classList.contains('active')) {
+                const subBadge = document.createElement('span');
+                subBadge.className = 'card-badge sub-on';
+                subBadge.innerText = subBtn.getAttribute('data-v');
+                viewConsume.appendChild(subBadge);
+              }
+            });
+          }
+        });
+        saveData();
+        adjustCardScale();
+      }
+
+      mainGroup.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tag-btn')) {
+          e.target.classList.toggle('active');
+          render();
+        }
+      });
+
+      Object.values(mapping).forEach(item => {
+        item.subGroup.addEventListener('click', (e) => {
+          if (e.target.classList.contains('tag-btn')) {
+            e.target.classList.toggle('active');
+            render();
+          }
+        });
+      });
+
+      render();
+    }
+    setupComplexConsumeTags();
+
+    // 테마 컬러
+    function setThemeColor(hex) {
+      document.documentElement.style.setProperty('--main-color', hex);
+      document.documentElement.style.setProperty('--bg-soft', hex + '26');
+      document.getElementById('themeInput').value = hex;
+    }
+
+    document.getElementById('themeInput').addEventListener('input', (e) => {
+      setThemeColor(e.target.value);
+      saveData();
+    });
+
+    // 스티커 로직 (마우스 + 모바일 터치 지원)
+    function addSticker(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const card = document.getElementById('card');
+      const sticker = document.createElement('div');
+      sticker.className = 'sticker-item selected';
+      sticker.style.width = '100px';
+      sticker.style.left = '440px';
+      sticker.style.top = '100px';
+
+      sticker.innerHTML = `
+        <img src="${URL.createObjectURL(file)}">
+        <div class="sticker-delete-btn" title="삭제">×</div>
+        <div class="sticker-resize-handle" title="크기 조절"></div>
+      `;
+
+      document.querySelectorAll('.sticker-item').forEach(s => s.classList.remove('selected'));
+      card.appendChild(sticker);
+      e.target.value = '';
+
+      makeInteractable(sticker, card);
+    }
+
+    function makeInteractable(sticker, container) {
+      let isDragging = false;
+      let isResizing = false;
+      let startX, startY, initialLeft, initialTop, initialWidth;
+
+      function getScale() {
+        const scaler = document.getElementById('cardScaler');
+        if (!scaler || scaler.style.transform === 'none' || !scaler.style.transform) return 1;
+        const match = scaler.style.transform.match(/scale\(([^)]+)\)/);
+        return match ? parseFloat(match[1]) : 1;
+      }
+
+      function handleStart(clientX, clientY, target) {
+        if (target.classList.contains('sticker-delete-btn')) {
+          sticker.remove();
+          return;
+        }
+
+        document.querySelectorAll('.sticker-item').forEach(s => s.classList.remove('selected'));
+        sticker.classList.add('selected');
+
+        const currentScale = getScale();
+
+        if (target.classList.contains('sticker-resize-handle')) {
+          isResizing = true;
+          startX = clientX;
+          initialWidth = sticker.offsetWidth;
+        } else {
+          isDragging = true;
+          startX = clientX / currentScale;
+          startY = clientY / currentScale;
+          initialLeft = sticker.offsetLeft;
+          initialTop = sticker.offsetTop;
+        }
+      }
+
+      function handleMove(clientX, clientY) {
+        const currentScale = getScale();
+
+        if (isDragging) {
+          const currentX = clientX / currentScale;
+          const currentY = clientY / currentScale;
+          const dx = currentX - startX;
+          const dy = currentY - startY;
+          sticker.style.left = `${initialLeft + dx}px`;
+          sticker.style.top = `${initialTop + dy}px`;
+        } else if (isResizing) {
+          const dx = (clientX - startX) / currentScale;
+          const newWidth = Math.max(30, initialWidth + dx);
+          sticker.style.width = `${newWidth}px`;
+        }
+      }
+
+      function handleEnd() {
+        isDragging = false;
+        isResizing = false;
+      }
+
+      // 마우스
+      sticker.addEventListener('mousedown', (e) => {
+        handleStart(e.clientX, e.clientY, e.target);
+        e.preventDefault();
+      });
+      window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+      window.addEventListener('mouseup', handleEnd);
+
+      // 모바일 터치
+      sticker.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          handleStart(e.touches[0].clientX, e.touches[0].clientY, e.target);
+        }
+      }, { passive: false });
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && (isDragging || isResizing)) {
+          handleMove(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: false });
+      window.addEventListener('touchend', handleEnd);
+    }
+
+    document.addEventListener('pointerdown', (e) => {
+      if (!e.target.closest('.sticker-item') && !e.target.closest('#stickerUploader')) {
+        document.querySelectorAll('.sticker-item').forEach(s => s.classList.remove('selected'));
+      }
+    });
+
+    // ===== 자동 저장 (LocalStorage) =====
+    function saveData() {
+      const getActiveTags = (containerId) => {
+        const container = document.getElementById(containerId);
+        if (!container) return [];
+        return Array.from(container.querySelectorAll('.tag-btn.active')).map(btn => btn.getAttribute('data-v'));
+      };
+
+      const data = {
+        theme: document.getElementById('themeInput').value,
+        name: document.getElementById('nameIn').value,
+        handle: document.getElementById('handleIn').value,
+        bubble: document.getElementById('bubbleIn').value,
+        free: document.getElementById('freeIn').value,
+        ng: document.getElementById('ngIn').value,
+        poem: document.getElementById('poemIn').value,
+        caps: [
+          document.getElementById('captionIn1').value,
+          document.getElementById('captionIn2').value,
+          document.getElementById('captionIn3').value,
+          document.getElementById('captionIn4').value
+        ],
+        tags: {
+          account: getActiveTags('groupAccount'),
+          fan: getActiveTags('groupFan'),
+          org: getActiveTags('groupOrg'),
+          consume: getActiveTags('groupConsume'),
+          subManga: getActiveTags('subGroupManga'),
+          subAnime: getActiveTags('subGroupAnime'),
+          subNovel: getActiveTags('subGroupNovel'),
+          subGame: getActiveTags('subGroupGame')
+        }
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadData() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+
+      try {
+        const data = JSON.parse(raw);
+        if (data.theme) setThemeColor(data.theme);
+
+        const restoreText = (inId, outId, val) => {
+          if (val !== undefined) {
+            document.getElementById(inId).value = val;
+            document.getElementById(outId).innerText = val;
+          }
+        };
+
+        restoreText('nameIn', 'viewName', data.name);
+        restoreText('handleIn', 'viewHandle', data.handle);
+        restoreText('bubbleIn', 'viewBubble', data.bubble);
+        restoreText('freeIn', 'viewFree', data.free);
+        restoreText('ngIn', 'viewNg', data.ng);
+        restoreText('poemIn', 'viewPoem', data.poem);
+
+        if (data.caps) {
+          data.caps.forEach((cap, idx) => {
+            restoreText(`captionIn${idx + 1}`, `viewCap${idx + 1}`, cap);
+          });
+        }
+
+        const restoreTags = (containerId, activeList) => {
+          if (!activeList) return;
+          const container = document.getElementById(containerId);
+          if (!container) return;
+          container.querySelectorAll('.tag-btn').forEach(btn => {
+            const v = btn.getAttribute('data-v');
+            btn.classList.toggle('active', activeList.includes(v));
+          });
+        };
+
+        if (data.tags) {
+          restoreTags('groupAccount', data.tags.account);
+          restoreTags('groupFan', data.tags.fan);
+          restoreTags('groupOrg', data.tags.org);
+          restoreTags('groupConsume', data.tags.consume);
+          restoreTags('subGroupManga', data.tags.subManga);
+          restoreTags('subGroupAnime', data.tags.subAnime);
+          restoreTags('subGroupNovel', data.tags.subNovel);
+          restoreTags('subGroupGame', data.tags.subGame);
+        }
+
+        ['groupAccount', 'groupFan', 'groupOrg'].forEach(id => {
+          const evt = new Event('click', { bubbles: true });
+          document.getElementById(id).dispatchEvent(evt);
+        });
+
+        setTimeout(adjustCardScale, 100);
+      } catch (err) {
+        console.error('데이터 복구 실패:', err);
+      }
+    }
+
+    function resetForm() {
+      if (confirm('작성 중인 모든 텍스트와 태그 설정을 초기화하시겠습니까?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadData);
+
+    // 다운로드 (저장 시에는 1:1 고해상도 규격으로 캡처)
+    function saveAsImage() {
+      const cardEl = document.getElementById('card');
+      cardEl.classList.add('capturing');
+
+      html2canvas(cardEl, { scale: 2, useCORS: true }).then(canvas => {
+        const a = document.createElement('a');
+        a.download = `${document.getElementById('nameIn').value || 'bleach_profile'}_card.png`;
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+        cardEl.classList.remove('capturing');
+      });
+    }
+  </script>
+</body>
+</html>
