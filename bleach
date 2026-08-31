@@ -630,7 +630,7 @@
 
     <div class="input-box">
       <label>말풍선 문구</label>
-      <input type="text" id="bubbleIn" value="반가워요!">
+      <input type="text" id="bubbleIn" value="쿠로사키 이치고, 사신대행이다.">
     </div>
 
     <div class="input-box">
@@ -638,20 +638,22 @@
       <div class="tag-container" id="groupAccount">
         <button class="tag-btn active" data-v="RT">RT</button>
         <button class="tag-btn active" data-v="마음">마음</button>
-        <button class="tag-btn active" data-v="앓이">앓이</button>
+        <button class="tag-btn active" data-v="소비">소비</button>
         <button class="tag-btn" data-v="구독">구독</button>
         <button class="tag-btn" data-v="일상">일상</button>
         <button class="tag-btn" data-v="그림">그림</button>
         <button class="tag-btn" data-v="글">글</button>
+        <button class="tag-btn" data-v="기타">기타</button>
       </div>
     </div>
 
     <div class="input-box">
-      <label>덕질 성향 (선택)</label>
+      <label>cp 성향 (선택)</label>
       <div class="tag-container" id="groupFan">
-        <button class="tag-btn active" data-v="cp">cp</button>
-        <button class="tag-btn active" data-v="ncp">ncp</button>
-        <button class="tag-btn" data-v="원작 only">원작 only</button>
+        <button class="tag-btn active" data-v="NCP">NCP</button>
+        <button class="tag-btn active" data-v="HL">HL</button>
+        <button class="tag-btn" data-v="GL">GL</button>
+        <button class="tag-btn" data-v="BL">BL</button>
         <button class="tag-btn" data-v="드림">드림</button>
       </div>
     </div>
@@ -806,7 +808,7 @@
     <div class="card-header">
       <div class="header-left">
         <div class="profile-avatar" id="slotProfile">프로필</div>
-        <div class="speech-box" id="viewBubble">반가워요!</div>
+        <div class="speech-box" id="viewBubble">쿠로사키 이치고, 사신대행이다.</div>
       </div>
       <div class="header-right">
         <div class="category-line">
@@ -814,7 +816,7 @@
           <div class="badge-wrap" id="viewAccount"></div>
         </div>
         <div class="category-line">
-          <span class="category-title">덕질 성향</span>
+          <span class="category-title">cp 성향</span>
           <div class="badge-wrap" id="viewFan"></div>
         </div>
         <!-- 카드 우상단 주력 세력 뱃지 라인 -->
