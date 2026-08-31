@@ -1416,7 +1416,7 @@
 
     window.addEventListener('DOMContentLoaded', loadData);
 
-    // ===== 다운로드 (정확한 1960 x 1382 규격 캡처) =====
+    // ===== 다운로드 (가로 1960px 고정, 세로는 내용에 맞게 자동 맞춤) =====
     async function saveAsImage() {
       const scaler = document.getElementById('cardScaler');
       const cardEl = document.getElementById('card');
@@ -1438,11 +1438,13 @@
         await document.fonts.ready;
       }
 
-      // 3. 고해상도 캡처 (가로 980px × 세로 691px 에 scale:2 적용 시 1960 × 1382 px 출력)
+      // 3. 내용물 실제 높이 측정 후 가로 980px에 맞춰 캡처 (가로 고정 1960px 생성)
+      const actualHeight = cardEl.offsetHeight;
+
       html2canvas(cardEl, {
         scale: 2,
         width: 980,
-        height: 691,
+        height: actualHeight,
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false
@@ -1456,7 +1458,7 @@
         console.error('이미지 저장 실패:', err);
         alert('이미지 저장 중 오류가 발생했습니다.');
       }).finally(() => {
-        // 4. 모바일 화면 배율 복원
+        // 4. 화면 배율 복원
         cardEl.classList.remove('capturing');
         scaler.style.transform = savedTransform;
         scaler.style.height = savedHeight;
