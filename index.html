@@ -505,26 +505,27 @@
       transform-origin: center center;
     }
 
-    /* 4분할 서브 이미지 텍스트: 둥근 상자(뱃지) 형태 */
     .slot-caption {
       position: absolute;
       bottom: 6px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--main-color);
+      left: 0;
+      width: 100%;
+      background: transparent;
       color: #ffffff;
-      font-weight: 700;
-      font-size: 11px;
+      font-weight: 800;
+      font-size: 12px;
       text-align: center;
-      padding: 3px 9px;
-      border-radius: 12px;
+      padding: 0;
       letter-spacing: -0.3px;
       word-break: keep-all;
-      white-space: nowrap;
       pointer-events: none;
       z-index: 10;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      text-shadow: 
+        -1px -1px 0 rgba(0, 0, 0, 0.8),
+         1px -1px 0 rgba(0, 0, 0, 0.8),
+        -1px  1px 0 rgba(0, 0, 0, 0.8),
+         1px  1px 0 rgba(0, 0, 0, 0.8),
+         0 2px 4px rgba(0, 0, 0, 0.6);
     }
 
     /* 권두시 / 명대사 영역 */
@@ -962,6 +963,7 @@
       let posX = 0, posY = 0;
       let scale = 1;
       
+      // 모바일 핀치 줌 전용 변수
       let isPinching = false;
       let initialPinchDistance = 0;
       let initialScale = 1;
@@ -1005,16 +1007,18 @@
         container.style.cursor = 'grab';
       });
 
-      // 3. 모바일 터치 이벤트 (이동 + 핀치 줌)
+      // 3. 모바일 터치 이벤트 (한 손가락 이동 + 두 손가락 핀치 줌)
       container.addEventListener('touchstart', (e) => {
         if (e.target.closest('.slot-caption')) return;
 
         if (e.touches.length === 1) {
+          // 한 손가락: 이동(Pan)
           isPanning = true;
           isPinching = false;
           startX = e.touches[0].clientX - posX;
           startY = e.touches[0].clientY - posY;
         } else if (e.touches.length === 2) {
+          // 두 손가락: 핀치 줌(Zoom)
           isPanning = false;
           isPinching = true;
           initialPinchDistance = getTouchDistance(e.touches);
@@ -1042,6 +1046,7 @@
           isPanning = false;
           isPinching = false;
         } else if (e.touches.length === 1) {
+          // 두 손가락 줌 하다가 손가락 하나 뗐을 때 위치 튀는 현상 방지
           isPinching = false;
           isPanning = true;
           startX = e.touches[0].clientX - posX;
