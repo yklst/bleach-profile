@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>블리치 프로필 카드 메이커</title>
+  <!-- 웹폰트(Pretendard & KoPub 바탕) 및 캡처 라이브러리 -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-kopub@1.0/kopubbatang.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <style>
+    :root {
+      --main-color: #5e5e5e;
+      --bg-soft: #5e5e5e26;
+      --bg-white: #ffffff;
+      --text-main: #2b2b2b;
+      --text-sub: #666666;
+    }
+
+    * { box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+    
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      background: #f4f6f9;
+      display: flex;
+      gap: 30px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    /* 좌측 입력 패널 */
+    .controls {
+      width: 360px;
+      background: #fff;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .controls h2 { margin: 0; font-size: 18px; color: #111; }
+    
+    .input-box {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .input-box label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #555;
+    }
+    .input-box input[type="text"], 
+    .input-box textarea {
+      padding: 9px 12px;
+      border: 1px solid #e2e5ec;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-box input[type="text"]:focus, 
+    .input-box textarea:focus {
+      border-color: var(--main-color);
+    }
+    .input-box textarea { resize: vertical; }
+
+    /* 태그 선택 기본 버튼 */
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag-btn {
+      border: 1px solid #e2e5ec;
+      background: #fff;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #666;
+      transition: all 0.2s;
+    }
+    .tag-btn.active {
+      background: var(--main-color);
+      color: #fff;
+      border-color: var(--main-color);
+      font-weight: 600;
+    }
+
+    /* 세부 서브 패널 */
+    .sub-tag-panel {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      background: #fafafa;
+      border: 1px dashed #cbd5e1;
+      padding: 8px 10px;
+      border-radius: 8px;
+      margin-top: 4px;
+    }
+    .sub-panel-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: #718096;
+    }
+    
+    .tag-btn.sub-btn {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
+    .tag-btn.sub-btn.active {
+      background: var(--bg-soft);
+      border-color: var(--main-color);
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .file-input {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .sub-slot-input {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .sub-slot-input input[type="text"] {
+      width: 100px;
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    /* 업로드된 사진 관리 리스트 스타일 */
+    .uploaded-img-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 6px;
+    }
+    .uploaded-img-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border: 1px solid #e2e5ec;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .img-item-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .img-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      object-fit: cover;
+      border: 1px solid #e2e5ec;
+    }
+    .img-item-name {
+      font-weight: 600;
+      color: #334155;
+    }
+    .btn-del-slot {
+      background: #fee2e2;
+      color: #ef4444;
+      border: none;
+      border-radius: 4px;
+      padding: 3px 7px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-del-slot:hover {
+      background: #fca5a5;
+      color: #b91c1c;
+    }
+
+    .btn-download {
+      background: #1e293b;
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+    .btn-download:hover { background: #0f172a; }
+
+    .btn-reset {
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-reset:hover {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    /* 우측 카드 영역 */
+    #card {
+      width: 980px;
+      background: #ffffff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* 카드 상단 */
+    .card-header {
+      background: var(--bg-soft);
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .profile-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: var(--main-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 13px;
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+    }
+    
+    .speech-box {
+      background: #fff;
+      padding: 10px 18px;
+      border-radius: 14px;
+      position: relative;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      max-width: 220px;
+      word-break: break-word;
+    }
+    .speech-box::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-style: solid;
+      border-width: 6px 8px 6px 0;
+      border-color: transparent #fff transparent transparent;
+    }
+
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .category-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .category-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #444;
+      min-width: 60px;
+      text-align: right;
+    }
+    .badge-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+    .card-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.8);
+      color: #999;
+    }
+    .card-badge.on {
+      background: var(--main-color);
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .card-badge.sub-on {
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1px solid var(--main-color);
+      font-size: 10px;
+      padding: 2px 6px;
+      font-weight: 600;
+    }
+
+    /* 카드 본문 */
+    .card-content {
+      padding: 32px 32px 36px 32px;
+      display: grid;
+      grid-template-columns: 1.15fr 1.25fr;
+      gap: 28px;
+      position: relative;
+    }
+
+    /* 본문 좌측 컬럼 */
+    .info-column {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      height: 100%;
+    }
+
+    .name-handle-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .card-name {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .card-handle {
+      font-size: 13px;
+      font-weight: 500;
+      color: #8e95a5;
+    }
+
+    .consume-box-wrapper {
+      background: var(--bg-soft);
+      padding: 12px 14px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .consume-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .text-box-card {
+      background: var(--bg-soft);
+      border-radius: 12px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .free-box {
+      flex: 1.8;
+      min-height: 140px;
+    }
+    .ng-box {
+      flex: 1;
+      min-height: 85px;
+    }
+    .text-box-card h4 {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: #555;
+    }
+    .text-box-card p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--text-main);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* 본문 우측 컬럼 */
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+    }
+
+    .gallery-column {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 12px;
+      flex: 1;
+    }
+    .main-slot {
+      background: var(--bg-soft);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--main-color);
+      font-weight: 600;
+      font-size: 13px;
+      min-height: 270px;
+      position: relative;
+    }
+    .sub-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 10px;
+    }
+    .sub-slot {
+      background: var(--main-color);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 11px;
+      aspect-ratio: 1/1.1;
+      position: relative;
+    }
+    
+    /* 이미지 Pan/Zoom 스타일 */
+    .pan-zoom-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: grab;
+    }
+    .pan-zoom-img {
+      max-width: none;
+      user-select: none;
+      pointer-events: auto;
+      transform-origin: center center;
+    }
+
+    .slot-caption {
+      position: absolute;
+      bottom: 6px;
+      left: 0;
+      width: 100%;
+      background: transparent;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 12px;
+      text-align: center;
+      padding: 0;
+      letter-spacing: -0.3px;
+      word-break: keep-all;
+      pointer-events: none;
+      z-index: 10;
+      text-shadow: 
+        -1px -1px 0 rgba(0, 0, 0, 0.8),
+         1px -1px 0 rgba(0, 0, 0, 0.8),
+        -1px  1px 0 rgba(0, 0, 0, 0.8),
+         1px  1px 0 rgba(0, 0, 0, 0.8),
+         0 2px 4px rgba(0, 0, 0, 0.6);
+    }
+
+    /* 권두시 / 명대사 영역 */
+    .poem-container {
+      padding: 4px 12px 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .poem-text {
+      margin: 0;
+      font-family: 'KoPub Batang', 'Batang', serif;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #3b3b3b;
+      letter-spacing: -0.2px;
+      word-break: keep-all;
+      white-space: pre-wrap;
+      font-style: normal;
+    }
+    .poem-text::before {
+      content: '“ ';
+      font-family: 'KoPub Batang', serif;
+      color: var(--main-color);
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .poem-text::after {
+      content: ' ”';
+      font-family: 'KoPub Batang', serif;
+      color: var(--main-color);
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    /* 우측 최하단 구석 크레딧 */
+    .card-credit {
+      position: absolute;
+      bottom: 8px;
+      right: 14px;
+      font-size: 10px;
+      color: #cbd5e1;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* 스티커 스타일 */
+    .sticker-item {
+      position: absolute;
+      z-index: 50;
+      cursor: move;
+      user-select: none;
+      display: inline-block;
+      line-height: 0;
+      touch-action: none;
+    }
+    .sticker-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+    }
+    .sticker-item.selected {
+      outline: 1.5px dashed var(--main-color);
+    }
+    .sticker-delete-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 20px;
+      height: 20px;
+      background: #ff4757;
+      color: white;
+      border: 1px solid #fff;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      line-height: 1;
+    }
+    .sticker-resize-handle {
+      position: absolute;
+      bottom: -6px;
+      right: -6px;
+      width: 14px;
+      height: 14px;
+      background: var(--main-color);
+      border: 2px solid white;
+      border-radius: 50%;
+      display: none;
+      cursor: nwse-resize;
+    }
+    .sticker-item.selected .sticker-delete-btn,
+    .sticker-item.selected .sticker-resize-handle {
+      display: flex;
+    }
+    .capturing .sticker-item {
+      outline: none !important;
+    }
+    .capturing .sticker-delete-btn,
+    .capturing .sticker-resize-handle {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 좌측 설정 사이드바 -->
+  <div class="controls">
+    <h2>카드 편집</h2>
+
+    <div class="input-box">
+      <label>테마 컬러</label>
+      <input type="color" id="themeInput" value="#5e5e5e">
+    </div>
+
+    <div class="input-box">
+      <label>닉네임 & 아이디</label>
+      <div style="display: flex; gap: 6px;">
+        <input type="text" id="nameIn" value="닉네임" placeholder="닉네임" style="flex: 1.2;">
+        <input type="text" id="handleIn" value="@id_name" placeholder="@아이디" style="flex: 1;">
+      </div>
+    </div>
+
+    <div class="input-box">
+      <label>말풍선 문구</label>
+      <input type="text" id="bubbleIn" value="반가워요!">
+    </div>
+
+    <div class="input-box">
+      <label>계정 성향 (선택)</label>
+      <div class="tag-container" id="groupAccount">
+        <button class="tag-btn active" data-v="RT">RT</button>
+        <button class="tag-btn active" data-v="마음">마음</button>
+        <button class="tag-btn active" data-v="앓이">앓이</button>
+        <button class="tag-btn" data-v="구독">구독</button>
+        <button class="tag-btn" data-v="일상">일상</button>
+        <button class="tag-btn" data-v="그림">그림</button>
+        <button class="tag-btn" data-v="글">글</button>
+      </div>
+    </div>
+
+    <div class="input-box">
+      <label>덕질 성향 (선택)</label>
+      <div class="tag-container" id="groupFan">
+        <button class="tag-btn active" data-v="cp">cp</button>
+        <button class="tag-btn active" data-v="ncp">ncp</button>
+        <button class="tag-btn" data-v="원작 only">원작 only</button>
+        <button class="tag-btn" data-v="드림">드림</button>
+      </div>
+    </div>
+
+    <!-- 주력 세력 영역 -->
+    <div class="input-box">
+      <label>주력 세력 (선택)</label>
+      <div class="tag-container" id="groupOrg">
+        <button class="tag-btn active" data-v="카라쿠라 마을">카라쿠라 마을</button>
+        <button class="tag-btn active" data-v="호정 13대">호정 13대</button>
+        <button class="tag-btn" data-v="아란칼">아란칼</button>
+        <button class="tag-btn" data-v="퀸시">퀸시</button>
+        <button class="tag-btn" data-v="풀브링거">풀브링거</button>
+        <button class="tag-btn" data-v="바이자드">바이자드</button>
+        <button class="tag-btn" data-v="그외">그외</button>
+      </div>
+    </div>
+
+    <!-- 소비 형태 및 세부 챕터 -->
+    <div class="input-box">
+      <label>소비 형태 (클릭 시 하위 상세 선택지 노출)</label>
+      <div class="tag-container" id="groupConsume">
+        <button class="tag-btn active" data-v="원작">원작</button>
+        <button class="tag-btn active" data-v="애니">애니</button>
+        <button class="tag-btn active" data-v="소설">소설</button>
+        <button class="tag-btn active" data-v="게임">게임</button>
+        <button class="tag-btn" data-v="그외">그외</button>
+      </div>
+
+      <!-- 원작 서브 옵션 -->
+      <div class="sub-tag-panel" id="panelManga">
+        <span class="sub-panel-title">↳ 원작 세부 선택:</span>
+        <div class="tag-container" id="subGroupManga">
+          <button class="tag-btn sub-btn active" data-v="사신대행">사신대행</button>
+          <button class="tag-btn sub-btn active" data-v="소울소사이어티">소울소사이어티</button>
+          <button class="tag-btn sub-btn active" data-v="아란칼">아란칼</button>
+          <button class="tag-btn sub-btn" data-v="사신대행소실">사신대행소실</button>
+          <button class="tag-btn sub-btn active" data-v="천년혈전">천년혈전</button>
+          <button class="tag-btn sub-btn" data-v="옥이명명">옥이명명</button>
+        </div>
+      </div>
+
+      <!-- 애니 서브 옵션 -->
+      <div class="sub-tag-panel" id="panelAnime">
+        <span class="sub-panel-title">↳ 애니/극장판/OVA 세부 선택:</span>
+        <div class="tag-container" id="subGroupAnime">
+          <button class="tag-btn sub-btn" data-v="바운트">바운트</button>
+          <button class="tag-btn sub-btn" data-v="맥효도">맥효도</button>
+          <button class="tag-btn sub-btn" data-v="참백도 이문">참백도 이문</button>
+          <button class="tag-btn sub-btn" data-v="호정13대 침군">호정13대 침군</button>
+          <button class="tag-btn sub-btn" data-v="OVA">OVA</button>
+          <button class="tag-btn sub-btn" data-v="메모리즈 오브 노바디">메모리즈 오브 노바디</button>
+          <button class="tag-btn sub-btn" data-v="다이아몬드 더스트 리벨리온">다이아몬드 더스트 리벨리온</button>
+          <button class="tag-btn sub-btn" data-v="페이드 투 블랙">페이드 투 블랙</button>
+          <button class="tag-btn sub-btn" data-v="지옥편">지옥편</button>
+        </div>
+      </div>
+
+      <!-- 소설 서브 옵션 -->
+      <div class="sub-tag-panel" id="panelNovel">
+        <span class="sub-panel-title">↳ 소설 세부 선택:</span>
+        <div class="tag-container" id="subGroupNovel">
+          <button class="tag-btn sub-btn active" data-v="레터즈">레터즈</button>
+          <button class="tag-btn sub-btn active" data-v="허니디쉬">허니디쉬</button>
+          <button class="tag-btn sub-btn" data-v="스피릿츠">스피릿츠</button>
+          <button class="tag-btn sub-btn" data-v="데스베리">데스베리</button>
+          <button class="tag-btn sub-btn active" data-v="캔피어">캔피어</button>
+          <button class="tag-btn sub-btn" data-v="위두낫">위두낫</button>
+          <button class="tag-btn sub-btn" data-v="그외">그외</button>
+        </div>
+      </div>
+
+      <!-- 게임 서브 옵션 -->
+      <div class="sub-tag-panel" id="panelGame">
+        <span class="sub-panel-title">↳ 게임 세부 선택:</span>
+        <div class="tag-container" id="subGroupGame">
+          <button class="tag-btn sub-btn active" data-v="브레소울">브레소울</button>
+          <button class="tag-btn sub-btn active" data-v="리버소울">리버소울</button>
+          <button class="tag-btn sub-btn" data-v="소울레조">소울레조</button>
+          <button class="tag-btn sub-btn" data-v="미러하이">미러하이</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 텍스트 입력부 -->
+    <div class="input-box">
+      <label>자유란</label>
+      <textarea id="freeIn" rows="4">자유롭게 입력할 수 있는 공간입니다. 성향, 교류 방식, 최애 조합 등을 편하게 적어주세요.</textarea>
+    </div>
+
+    <div class="input-box">
+      <label>NG / 지뢰</label>
+      <textarea id="ngIn" rows="2">소비하지 못하는 요소나 지뢰를 적어주세요.</textarea>
+    </div>
+
+    <div class="input-box">
+      <label>권두시 / 좋아하는 대사 (명조체)</label>
+      <input type="text" id="poemIn" value="우리는 모습을 지니지 않기에 그것을 두려워한다." placeholder="권두시 또는 좋아하는 대사를 입력하세요">
+    </div>
+
+    <!-- 이미지 및 서브 캡션 등록 -->
+    <div class="input-box">
+      <label>사진 & 이름 등록</label>
+      
+      <span style="font-size:11px; color:#888;">원형 프로필</span>
+      <input type="file" id="file_slotProfile" class="file-input" onchange="setImage(event, 'slotProfile')">
+      
+      <span style="font-size:11px; color:#888; margin-top:4px;">대표 이미지</span>
+      <input type="file" id="file_slotMain" class="file-input" onchange="setImage(event, 'slotMain')">
+
+      <span style="font-size:11px; color:#888; margin-top:6px; font-weight: bold;">4분할 서브 이미지 & 텍스트</span>
+      
+      <div class="sub-slot-input">
+        <input type="file" id="file_imgSub1" class="file-input" onchange="setImage(event, 'imgSub1')">
+        <input type="text" id="captionIn1" placeholder="이름 1" value="이치고">
+      </div>
+      <div class="sub-slot-input">
+        <input type="file" id="file_imgSub2" class="file-input" onchange="setImage(event, 'imgSub2')">
+        <input type="text" id="captionIn2" placeholder="이름 2" value="루키아">
+      </div>
+      <div class="sub-slot-input">
+        <input type="file" id="file_imgSub3" class="file-input" onchange="setImage(event, 'imgSub3')">
+        <input type="text" id="captionIn3" placeholder="이름 3" value="오리히메">
+      </div>
+      <div class="sub-slot-input">
+        <input type="file" id="file_imgSub4" class="file-input" onchange="setImage(event, 'imgSub4')">
+        <input type="text" id="captionIn4" placeholder="이름 4" value="렌지">
+      </div>
+
+      <!-- 업로드된 사진 관리 목록 -->
+      <div class="uploaded-img-list" id="uploadedImageList" style="display: none;">
+        <span style="font-size: 11px; font-weight: bold; color: #475569;">등록된 사진 목록</span>
+        <div id="uploadedItems" style="display: flex; flex-direction: column; gap: 4px;"></div>
+      </div>
+    </div>
+
+    <!-- 스티커 추가 섹션 -->
+    <div class="input-box">
+      <label>스티커 추가 (PNG 등 투명 이미지 권장)</label>
+      <input type="file" class="file-input" id="stickerUploader" accept="image/*" onchange="addSticker(event)">
+      <span style="font-size: 11px; color: #888; margin-top: 2px;">
+        * 추가 후 드래그로 위치 이동 / 우하단 점으로 크기 조절
+      </span>
+    </div>
+
+    <button class="btn-download" onclick="saveAsImage()">이미지로 저장하기</button>
+    <button class="btn-reset" onclick="resetForm()">작성 내용 초기화</button>
+  </div>
+
+  <!-- 프로필 카드 미리보기 -->
+  <div id="card">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="profile-avatar" id="slotProfile">프로필</div>
+        <div class="speech-box" id="viewBubble">반가워요!</div>
+      </div>
+      <div class="header-right">
+        <div class="category-line">
+          <span class="category-title">계정 성향</span>
+          <div class="badge-wrap" id="viewAccount"></div>
+        </div>
+        <div class="category-line">
+          <span class="category-title">덕질 성향</span>
+          <div class="badge-wrap" id="viewFan"></div>
+        </div>
+        <!-- 카드 우상단 주력 세력 뱃지 라인 -->
+        <div class="category-line">
+          <span class="category-title">주력 세력</span>
+          <div class="badge-wrap" id="viewOrg"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-content">
+      <div class="info-column">
+        <div class="name-handle-wrap">
+          <h3 class="card-name" id="viewName">닉네임</h3>
+          <span class="card-handle" id="viewHandle">@id_name</span>
+        </div>
+        
+        <div class="consume-box-wrapper">
+          <div class="consume-bar" id="viewConsume"></div>
+        </div>
+
+        <div class="text-box-card free-box">
+          <h4>자유란 /</h4>
+          <p id="viewFree">자유롭게 입력할 수 있는 공간입니다. 성향, 교류 방식, 최애 조합 등을 편하게 적어주세요.</p>
+        </div>
+
+        <div class="text-box-card ng-box">
+          <h4>NG /</h4>
+          <p id="viewNg">소비하지 못하는 요소나 지뢰를 적어주세요.</p>
+        </div>
+      </div>
+
+      <div class="right-column">
+        <div class="gallery-column">
+          <div class="main-slot" id="slotMain">대표 이미지</div>
+          <div class="sub-grid">
+            <div class="sub-slot">
+              <div id="imgSub1" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">1</div>
+              <div class="slot-caption" id="viewCap1">이치고</div>
+            </div>
+            <div class="sub-slot">
+              <div id="imgSub2" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">2</div>
+              <div class="slot-caption" id="viewCap2">루키아</div>
+            </div>
+            <div class="sub-slot">
+              <div id="imgSub3" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">3</div>
+              <div class="slot-caption" id="viewCap3">오리히메</div>
+            </div>
+            <div class="sub-slot">
+              <div id="imgSub4" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">4</div>
+              <div class="slot-caption" id="viewCap4">렌지</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="poem-container">
+          <p class="poem-text" id="viewPoem">우리는 모습을 지니지 않기에 그것을 두려워한다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 카드 전체 최하단 우측 구석 크레딧 -->
+    <div class="card-credit">제작 @clover10y</div>
+  </div>
+
+  <!-- 스크립트 -->
+  <script>
+    const STORAGE_KEY = 'bleach_card_maker_auto_save_final';
+
+    // 텍스트 동기화 및 자동 저장
+    const syncText = (inId, outId) => {
+      document.getElementById(inId).addEventListener('input', (e) => {
+        document.getElementById(outId).innerText = e.target.value;
+        saveData();
+      });
+    };
+    syncText('nameIn', 'viewName');
+    syncText('handleIn', 'viewHandle');
+    syncText('bubbleIn', 'viewBubble');
+    syncText('freeIn', 'viewFree');
+    syncText('ngIn', 'viewNg');
+    syncText('poemIn', 'viewPoem');
+    syncText('captionIn1', 'viewCap1');
+    syncText('captionIn2', 'viewCap2');
+    syncText('captionIn3', 'viewCap3');
+    syncText('captionIn4', 'viewCap4');
+
+    // 이미지 Pan/Zoom 기능
+    function makeImagePanZoom(container, img) {
+      let isPanning = false;
+      let startX, startY;
+      let posX = 0, posY = 0;
+      let scale = 1;
+
+      function updateTransform() {
+        img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+      }
+
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY * -0.0015;
+        scale = Math.min(Math.max(0.5, scale + delta), 3.5);
+        updateTransform();
+      }, { passive: false });
+
+      container.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.slot-caption')) return;
+        isPanning = true;
+        startX = e.clientX - posX;
+        startY = e.clientY - posY;
+        container.style.cursor = 'grabbing';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        posX = e.clientX - startX;
+        posY = e.clientY - startY;
+        updateTransform();
+      });
+
+      window.addEventListener('mouseup', () => {
+        isPanning = false;
+        container.style.cursor = 'grab';
+      });
+    }
+
+    // 사진 관리 리스트
+    const defaultSlotTexts = {
+      'slotProfile': '프로필',
+      'slotMain': '대표 이미지',
+      'imgSub1': '1',
+      'imgSub2': '2',
+      'imgSub3': '3',
+      'imgSub4': '4'
+    };
+
+    const slotDisplayNames = {
+      'slotProfile': '원형 프로필',
+      'slotMain': '대표 이미지',
+      'imgSub1': '서브 1',
+      'imgSub2': '서브 2',
+      'imgSub3': '서브 3',
+      'imgSub4': '서브 4'
+    };
+
+    const uploadedImages = {};
+
+    function updateUploadedList() {
+      const container = document.getElementById('uploadedImageList');
+      const listEl = document.getElementById('uploadedItems');
+      listEl.innerHTML = '';
+
+      const keys = Object.keys(uploadedImages);
+      if (keys.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'flex';
+      keys.forEach(id => {
+        const item = document.createElement('div');
+        item.className = 'uploaded-img-item';
+        item.innerHTML = `
+          <div class="img-item-info">
+            <img class="img-thumb" src="${uploadedImages[id]}">
+            <span class="img-item-name">${slotDisplayNames[id]}</span>
+          </div>
+          <button class="btn-del-slot" onclick="removeSlotImage('${id}')">삭제</button>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function removeSlotImage(targetId) {
+      delete uploadedImages[targetId];
+      const target = document.getElementById(targetId);
+      target.innerHTML = defaultSlotTexts[targetId];
+
+      const input = document.getElementById(`file_${targetId}`);
+      if (input) input.value = '';
+
+      updateUploadedList();
+    }
+
+    function setImage(e, targetId) {
+      const file = e.target.files[0];
+      if (file) {
+        const target = document.getElementById(targetId);
+        const url = URL.createObjectURL(file);
+        uploadedImages[targetId] = url;
+
+        target.innerHTML = `
+          <div class="pan-zoom-container">
+            <img src="${url}" class="pan-zoom-img" draggable="false" style="min-width:100%; min-height:100%; object-fit:cover;">
+          </div>
+        `;
+        const panContainer = target.querySelector('.pan-zoom-container');
+        const img = target.querySelector('.pan-zoom-img');
+        makeImagePanZoom(panContainer, img);
+
+        updateUploadedList();
+      }
+    }
+
+    function linkTags(groupId, viewId) {
+      const group = document.getElementById(groupId);
+      const view = document.getElementById(viewId);
+
+      function update() {
+        view.innerHTML = '';
+        group.querySelectorAll('.tag-btn').forEach(btn => {
+          const badge = document.createElement('span');
+          badge.className = `card-badge ${btn.classList.contains('active') ? 'on' : ''}`;
+          badge.innerText = btn.getAttribute('data-v');
+          view.appendChild(badge);
+        });
+        saveData();
+      }
+
+      group.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tag-btn')) {
+          e.target.classList.toggle('active');
+          update();
+        }
+      });
+      update();
+    }
+    linkTags('groupAccount', 'viewAccount');
+    linkTags('groupFan', 'viewFan');
+    linkTags('groupOrg', 'viewOrg');
+
+    function setupComplexConsumeTags() {
+      const mainGroup = document.getElementById('groupConsume');
+      const viewConsume = document.getElementById('viewConsume');
+
+      const mapping = {
+        '원작': { panel: document.getElementById('panelManga'), subGroup: document.getElementById('subGroupManga') },
+        '애니': { panel: document.getElementById('panelAnime'), subGroup: document.getElementById('subGroupAnime') },
+        '소설': { panel: document.getElementById('panelNovel'), subGroup: document.getElementById('subGroupNovel') },
+        '게임': { panel: document.getElementById('panelGame'), subGroup: document.getElementById('subGroupGame') }
+      };
+
+      function render() {
+        viewConsume.innerHTML = '';
+
+        mainGroup.querySelectorAll('.tag-btn').forEach(btn => {
+          const key = btn.getAttribute('data-v');
+          const isActive = btn.classList.contains('active');
+
+          const badge = document.createElement('span');
+          badge.className = `card-badge ${isActive ? 'on' : ''}`;
+          badge.innerText = key;
+          viewConsume.appendChild(badge);
+
+          if (mapping[key]) {
+            mapping[key].panel.style.display = isActive ? 'flex' : 'none';
+          }
+        });
+
+        Object.keys(mapping).forEach(key => {
+          const mainBtn = mainGroup.querySelector(`[data-v="${key}"]`);
+          if (mainBtn && mainBtn.classList.contains('active')) {
+            mapping[key].subGroup.querySelectorAll('.tag-btn').forEach(subBtn => {
+              if (subBtn.classList.contains('active')) {
+                const subBadge = document.createElement('span');
+                subBadge.className = 'card-badge sub-on';
+                subBadge.innerText = subBtn.getAttribute('data-v');
+                viewConsume.appendChild(subBadge);
+              }
+            });
+          }
+        });
+        saveData();
+      }
+
+      mainGroup.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tag-btn')) {
+          e.target.classList.toggle('active');
+          render();
+        }
+      });
+
+      Object.values(mapping).forEach(item => {
+        item.subGroup.addEventListener('click', (e) => {
+          if (e.target.classList.contains('tag-btn')) {
+            e.target.classList.toggle('active');
+            render();
+          }
+        });
+      });
+
+      render();
+    }
+    setupComplexConsumeTags();
+
+    // 테마 컬러
+    function setThemeColor(hex) {
+      document.documentElement.style.setProperty('--main-color', hex);
+      document.documentElement.style.setProperty('--bg-soft', hex + '26');
+      document.getElementById('themeInput').value = hex;
+    }
+
+    document.getElementById('themeInput').addEventListener('input', (e) => {
+      setThemeColor(e.target.value);
+      saveData();
+    });
+
+    // 스티커 로직
+    function addSticker(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const card = document.getElementById('card');
+      const sticker = document.createElement('div');
+      sticker.className = 'sticker-item selected';
+      sticker.style.width = '100px';
+      sticker.style.left = '440px';
+      sticker.style.top = '100px';
+
+      sticker.innerHTML = `
+        <img src="${URL.createObjectURL(file)}">
+        <div class="sticker-delete-btn" title="삭제">×</div>
+        <div class="sticker-resize-handle" title="크기 조절"></div>
+      `;
+
+      document.querySelectorAll('.sticker-item').forEach(s => s.classList.remove('selected'));
+      card.appendChild(sticker);
+      e.target.value = '';
+
+      makeInteractable(sticker, card);
+    }
+
+    function makeInteractable(sticker, container) {
+      let isDragging = false;
+      let isResizing = false;
+      let startX, startY, initialLeft, initialTop, initialWidth;
+
+      sticker.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('sticker-delete-btn')) {
+          sticker.remove();
+          return;
+        }
+
+        document.querySelectorAll('.sticker-item').forEach(s => s.classList.remove('selected'));
+        sticker.classList.add('selected');
+
+        if (e.target.classList.contains('sticker-resize-handle')) {
+          isResizing = true;
+          startX = e.clientX;
+          initialWidth = sticker.offsetWidth;
+        } else {
+          isDragging = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          initialLeft = sticker.offsetLeft;
+          initialTop = sticker.offsetTop;
+        }
+
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          sticker.style.left = `${initialLeft + dx}px`;
+          sticker.style.top = `${initialTop + dy}px`;
+        } else if (isResizing) {
+          const dx = e.clientX - startX;
+          const newWidth = Math.max(30, initialWidth + dx);
+          sticker.style.width = `${newWidth}px`;
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+        isResizing = false;
+      });
+    }
+
+    document.addEventListener('mousedown', (e) => {
+      if (!e.target.closest('.sticker-item') && !e.target.closest('#stickerUploader')) {
+        document.querySelectorAll('.sticker-item').forEach(s => s.classList.remove('selected'));
+      }
+    });
+
+    // ===== 자동 저장 (LocalStorage) =====
+    function saveData() {
+      const getActiveTags = (containerId) => {
+        const container = document.getElementById(containerId);
+        if (!container) return [];
+        return Array.from(container.querySelectorAll('.tag-btn.active')).map(btn => btn.getAttribute('data-v'));
+      };
+
+      const data = {
+        theme: document.getElementById('themeInput').value,
+        name: document.getElementById('nameIn').value,
+        handle: document.getElementById('handleIn').value,
+        bubble: document.getElementById('bubbleIn').value,
+        free: document.getElementById('freeIn').value,
+        ng: document.getElementById('ngIn').value,
+        poem: document.getElementById('poemIn').value,
+        caps: [
+          document.getElementById('captionIn1').value,
+          document.getElementById('captionIn2').value,
+          document.getElementById('captionIn3').value,
+          document.getElementById('captionIn4').value
+        ],
+        tags: {
+          account: getActiveTags('groupAccount'),
+          fan: getActiveTags('groupFan'),
+          org: getActiveTags('groupOrg'),
+          consume: getActiveTags('groupConsume'),
+          subManga: getActiveTags('subGroupManga'),
+          subAnime: getActiveTags('subGroupAnime'),
+          subNovel: getActiveTags('subGroupNovel'),
+          subGame: getActiveTags('subGroupGame')
+        }
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadData() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+
+      try {
+        const data = JSON.parse(raw);
+        if (data.theme) setThemeColor(data.theme);
+
+        const restoreText = (inId, outId, val) => {
+          if (val !== undefined) {
+            document.getElementById(inId).value = val;
+            document.getElementById(outId).innerText = val;
+          }
+        };
+
+        restoreText('nameIn', 'viewName', data.name);
+        restoreText('handleIn', 'viewHandle', data.handle);
+        restoreText('bubbleIn', 'viewBubble', data.bubble);
+        restoreText('freeIn', 'viewFree', data.free);
+        restoreText('ngIn', 'viewNg', data.ng);
+        restoreText('poemIn', 'viewPoem', data.poem);
+
+        if (data.caps) {
+          data.caps.forEach((cap, idx) => {
+            restoreText(`captionIn${idx + 1}`, `viewCap${idx + 1}`, cap);
+          });
+        }
+
+        const restoreTags = (containerId, activeList) => {
+          if (!activeList) return;
+          const container = document.getElementById(containerId);
+          if (!container) return;
+          container.querySelectorAll('.tag-btn').forEach(btn => {
+            const v = btn.getAttribute('data-v');
+            btn.classList.toggle('active', activeList.includes(v));
+          });
+        };
+
+        if (data.tags) {
+          restoreTags('groupAccount', data.tags.account);
+          restoreTags('groupFan', data.tags.fan);
+          restoreTags('groupOrg', data.tags.org);
+          restoreTags('groupConsume', data.tags.consume);
+          restoreTags('subGroupManga', data.tags.subManga);
+          restoreTags('subGroupAnime', data.tags.subAnime);
+          restoreTags('subGroupNovel', data.tags.subNovel);
+          restoreTags('subGroupGame', data.tags.subGame);
+        }
+
+        ['groupAccount', 'groupFan', 'groupOrg'].forEach(id => {
+          const evt = new Event('click', { bubbles: true });
+          document.getElementById(id).dispatchEvent(evt);
+        });
+      } catch (err) {
+        console.error('데이터 복구 실패:', err);
+      }
+    }
+
+    function resetForm() {
+      if (confirm('작성 중인 모든 텍스트와 태그 설정을 초기화하시겠습니까?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadData);
+
+    // 다운로드
+    function saveAsImage() {
+      const cardEl = document.getElementById('card');
+      cardEl.classList.add('capturing');
+
+      html2canvas(cardEl, { scale: 2, useCORS: true }).then(canvas => {
+        const a = document.createElement('a');
+        a.download = `${document.getElementById('nameIn').value || 'bleach_profile'}_card.png`;
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+        cardEl.classList.remove('capturing');
+      });
+    }
+  </script>
+</body>
+</html>
