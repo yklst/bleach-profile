@@ -224,7 +224,7 @@
       color: #334155;
     }
 
-    /* 카드 래퍼 (모바일 자동 축소 스케일러) */
+    /* 카드 래퍼 (모바일 화면 맞춤 배율 컨테이너) */
     .card-scaler {
       display: flex;
       justify-content: center;
@@ -232,7 +232,7 @@
       transform-origin: top center;
     }
 
-    /* 우측 카드 본체 (규격 고정 980px) */
+    /* PC 규격 카드 본체 (가로 980px 고정) */
     #card {
       width: 980px;
       min-width: 980px;
@@ -245,7 +245,7 @@
       position: relative;
     }
 
-    /* 모바일 반응형 레이아웃 */
+    /* 반응형 레이아웃 정렬 */
     @media (max-width: 1024px) {
       body {
         flex-direction: column;
@@ -827,7 +827,7 @@
       </span>
     </div>
 
-    <button class="btn-download" onclick="saveAsImage()">이미지로 저장하기</button>
+    <button class="btn-download" id="btnDownload" onclick="saveAsImage()">이미지로 저장하기</button>
     <button class="btn-reset" onclick="resetForm()">작성 내용 초기화</button>
   </div>
 
@@ -923,9 +923,8 @@
       if (!scaler || !card) return;
 
       const windowWidth = window.innerWidth;
-      // 모바일/태블릿 등 화면이 카드 기본 너비(980px + 여백)보다 작을 때
       if (windowWidth < 1024) {
-        const availableWidth = windowWidth - 24; // 좌우 여백
+        const availableWidth = windowWidth - 24;
         const scale = Math.min(1, availableWidth / 980);
         scaler.style.transform = `scale(${scale})`;
         scaler.style.height = `${card.offsetHeight * scale}px`;
@@ -957,7 +956,7 @@
     syncText('captionIn3', 'viewCap3');
     syncText('captionIn4', 'viewCap4');
 
-    // 이미지 Pan/Zoom 기능 (마우스 + 모바일 터치 지원)
+    // 이미지 Pan/Zoom 기능 (마우스 + 터치)
     function makeImagePanZoom(container, img) {
       let isPanning = false;
       let startX, startY;
@@ -975,7 +974,7 @@
         updateTransform();
       }, { passive: false });
 
-      // 마우스 이벤트
+      // 마우스
       container.addEventListener('mousedown', (e) => {
         if (e.target.closest('.slot-caption')) return;
         isPanning = true;
@@ -996,7 +995,7 @@
         container.style.cursor = 'grab';
       });
 
-      // 모바일 터치 이벤트
+      // 터치
       container.addEventListener('touchstart', (e) => {
         if (e.target.closest('.slot-caption')) return;
         if (e.touches.length === 1) {
@@ -1201,7 +1200,7 @@
       saveData();
     });
 
-    // 스티커 로직 (마우스 + 모바일 터치 지원)
+    // 스티커 인터랙션 로직
     function addSticker(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -1417,17 +1416,52 @@
 
     window.addEventListener('DOMContentLoaded', loadData);
 
-    // 다운로드 (저장 시에는 1:1 고해상도 규격으로 캡처)
-    function saveAsImage() {
+    // ===== 다운로드 (정확한 1960 x 1382 규격 캡처) =====
+    async function saveAsImage() {
+      const scaler = document.getElementById('cardScaler');
       const cardEl = document.getElementById('card');
+      const btn = document.getElementById('btnDownload');
+
+      btn.disabled = true;
+      btn.innerText = '저장 중...';
+
+      // 1. 모바일 화면 축소 배율 임시 해제
+      const savedTransform = scaler.style.transform;
+      const savedHeight = scaler.style.height;
+      scaler.style.transform = 'none';
+      scaler.style.height = 'auto';
+
       cardEl.classList.add('capturing');
 
-      html2canvas(cardEl, { scale: 2, useCORS: true }).then(canvas => {
+      // 2. 폰트 로드 대기
+      if (document.fonts) {
+        await document.fonts.ready;
+      }
+
+      // 3. 고해상도 캡처 (가로 980px × 세로 691px 에 scale:2 적용 시 1960 × 1382 px 출력)
+      html2canvas(cardEl, {
+        scale: 2,
+        width: 980,
+        height: 691,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      }).then(canvas => {
         const a = document.createElement('a');
-        a.download = `${document.getElementById('nameIn').value || 'bleach_profile'}_card.png`;
+        const filename = document.getElementById('nameIn').value || 'bleach_profile';
+        a.download = `${filename}_card.png`;
         a.href = canvas.toDataURL('image/png');
         a.click();
+      }).catch(err => {
+        console.error('이미지 저장 실패:', err);
+        alert('이미지 저장 중 오류가 발생했습니다.');
+      }).finally(() => {
+        // 4. 모바일 화면 배율 복원
         cardEl.classList.remove('capturing');
+        scaler.style.transform = savedTransform;
+        scaler.style.height = savedHeight;
+        btn.disabled = false;
+        btn.innerText = '이미지로 저장하기';
       });
     }
   </script>
