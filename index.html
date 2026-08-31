@@ -505,6 +505,7 @@
       transform-origin: center center;
     }
 
+    /* 캡션: 테마색 기반 텍스트 그림자 */
     .slot-caption {
       position: absolute;
       bottom: 6px;
@@ -521,11 +522,11 @@
       pointer-events: none;
       z-index: 10;
       text-shadow: 
-        -1px -1px 0 rgba(0, 0, 0, 0.8),
-         1px -1px 0 rgba(0, 0, 0, 0.8),
-        -1px  1px 0 rgba(0, 0, 0, 0.8),
-         1px  1px 0 rgba(0, 0, 0, 0.8),
-         0 2px 4px rgba(0, 0, 0, 0.6);
+        -1.5px -1.5px 0 var(--main-color),
+         1.5px -1.5px 0 var(--main-color),
+        -1.5px  1.5px 0 var(--main-color),
+         1.5px  1.5px 0 var(--main-color),
+         0 2px 4px var(--main-color);
     }
 
     /* 권두시 / 명대사 영역 */
@@ -963,7 +964,6 @@
       let posX = 0, posY = 0;
       let scale = 1;
       
-      // 모바일 핀치 줌 전용 변수
       let isPinching = false;
       let initialPinchDistance = 0;
       let initialScale = 1;
@@ -1007,18 +1007,16 @@
         container.style.cursor = 'grab';
       });
 
-      // 3. 모바일 터치 이벤트 (한 손가락 이동 + 두 손가락 핀치 줌)
+      // 3. 모바일 터치 이벤트 (이동 + 핀치 줌)
       container.addEventListener('touchstart', (e) => {
         if (e.target.closest('.slot-caption')) return;
 
         if (e.touches.length === 1) {
-          // 한 손가락: 이동(Pan)
           isPanning = true;
           isPinching = false;
           startX = e.touches[0].clientX - posX;
           startY = e.touches[0].clientY - posY;
         } else if (e.touches.length === 2) {
-          // 두 손가락: 핀치 줌(Zoom)
           isPanning = false;
           isPinching = true;
           initialPinchDistance = getTouchDistance(e.touches);
@@ -1046,7 +1044,6 @@
           isPanning = false;
           isPinching = false;
         } else if (e.touches.length === 1) {
-          // 두 손가락 줌 하다가 손가락 하나 뗐을 때 위치 튀는 현상 방지
           isPinching = false;
           isPanning = true;
           startX = e.touches[0].clientX - posX;
