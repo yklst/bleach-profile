@@ -1,10 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>블리치 프로필 카드 메이커</title>
-  <!-- 웹폰트(Pretendard & KoPub 바탕) 및 캡처 라이브러리 -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-kopub@1.0/kopubbatang.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -505,27 +505,26 @@
       transform-origin: center center;
     }
 
+    /* 4분할 서브 이미지 텍스트: 둥근 상자(뱃지) 형태 */
     .slot-caption {
       position: absolute;
       bottom: 6px;
-      left: 0;
-      width: 100%;
-      background: transparent;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--main-color);
       color: #ffffff;
-      font-weight: 800;
-      font-size: 12px;
+      font-weight: 700;
+      font-size: 11px;
       text-align: center;
-      padding: 0;
+      padding: 3px 9px;
+      border-radius: 12px;
       letter-spacing: -0.3px;
       word-break: keep-all;
+      white-space: nowrap;
       pointer-events: none;
       z-index: 10;
-      text-shadow: 
-        -1px -1px 0 rgba(0, 0, 0, 0.8),
-         1px -1px 0 rgba(0, 0, 0, 0.8),
-        -1px  1px 0 rgba(0, 0, 0, 0.8),
-         1px  1px 0 rgba(0, 0, 0, 0.8),
-         0 2px 4px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.35);
     }
 
     /* 권두시 / 명대사 영역 */
@@ -639,7 +638,6 @@
 </head>
 <body>
 
-  <!-- 좌측 설정 사이드바 -->
   <div class="controls">
     <h2>카드 편집</h2>
 
@@ -686,7 +684,6 @@
       </div>
     </div>
 
-    <!-- 주력 세력 영역 -->
     <div class="input-box">
       <label>주력 세력 (선택)</label>
       <div class="tag-container" id="groupOrg">
@@ -700,7 +697,6 @@
       </div>
     </div>
 
-    <!-- 소비 형태 및 세부 챕터 -->
     <div class="input-box">
       <label>소비 형태 (클릭 시 하위 상세 선택지 노출)</label>
       <div class="tag-container" id="groupConsume">
@@ -711,7 +707,6 @@
         <button class="tag-btn" data-v="그외">그외</button>
       </div>
 
-      <!-- 원작 서브 옵션 -->
       <div class="sub-tag-panel" id="panelManga">
         <span class="sub-panel-title">↳ 원작 세부 선택:</span>
         <div class="tag-container" id="subGroupManga">
@@ -724,7 +719,6 @@
         </div>
       </div>
 
-      <!-- 애니 서브 옵션 -->
       <div class="sub-tag-panel" id="panelAnime">
         <span class="sub-panel-title">↳ 애니/극장판/OVA 세부 선택:</span>
         <div class="tag-container" id="subGroupAnime">
@@ -740,7 +734,6 @@
         </div>
       </div>
 
-      <!-- 소설 서브 옵션 -->
       <div class="sub-tag-panel" id="panelNovel">
         <span class="sub-panel-title">↳ 소설 세부 선택:</span>
         <div class="tag-container" id="subGroupNovel">
@@ -754,7 +747,6 @@
         </div>
       </div>
 
-      <!-- 게임 서브 옵션 -->
       <div class="sub-tag-panel" id="panelGame">
         <span class="sub-panel-title">↳ 게임 세부 선택:</span>
         <div class="tag-container" id="subGroupGame">
@@ -766,7 +758,6 @@
       </div>
     </div>
 
-    <!-- 텍스트 입력부 -->
     <div class="input-box">
       <label>자유란</label>
       <textarea id="freeIn" rows="4">자유롭게 입력할 수 있는 공간입니다. 성향, 교류 방식, 최애 조합 등을 편하게 적어주세요.</textarea>
@@ -782,7 +773,6 @@
       <input type="text" id="poemIn" value="우리는 모습을 지니지 않기에 그것을 두려워한다." placeholder="권두시 또는 좋아하는 대사를 입력하세요">
     </div>
 
-    <!-- 이미지 및 서브 캡션 등록 -->
     <div class="input-box">
       <label>사진 & 이름 등록</label>
       
@@ -811,14 +801,12 @@
         <input type="text" id="captionIn4" placeholder="이름 4" value="렌지">
       </div>
 
-      <!-- 업로드된 사진 관리 목록 -->
       <div class="uploaded-img-list" id="uploadedImageList" style="display: none;">
         <span style="font-size: 11px; font-weight: bold; color: #475569;">등록된 사진 목록</span>
         <div id="uploadedItems" style="display: flex; flex-direction: column; gap: 4px;"></div>
       </div>
     </div>
 
-    <!-- 스티커 추가 섹션 -->
     <div class="input-box">
       <label>스티커 추가 (PNG 등 투명 이미지 권장)</label>
       <input type="file" class="file-input" id="stickerUploader" accept="image/*" onchange="addSticker(event)">
@@ -831,7 +819,6 @@
     <button class="btn-reset" onclick="resetForm()">작성 내용 초기화</button>
   </div>
 
-  <!-- 프로필 카드 미리보기 래퍼 -->
   <div class="card-scaler" id="cardScaler">
     <div id="card">
       <div class="card-header">
@@ -848,7 +835,6 @@
             <span class="category-title">cp 성향</span>
             <div class="badge-wrap" id="viewFan"></div>
           </div>
-          <!-- 카드 우상단 주력 세력 뱃지 라인 -->
           <div class="category-line">
             <span class="category-title">주력 세력</span>
             <div class="badge-wrap" id="viewOrg"></div>
@@ -907,12 +893,10 @@
         </div>
       </div>
 
-      <!-- 카드 전체 최하단 우측 구석 크레딧 -->
       <div class="card-credit">제작 @clover10y</div>
     </div>
   </div>
 
-  <!-- 스크립트 -->
   <script>
     const STORAGE_KEY = 'bleach_card_maker_auto_save_final';
 
@@ -963,7 +947,6 @@
       let posX = 0, posY = 0;
       let scale = 1;
       
-      // 모바일 핀치 줌 전용 변수
       let isPinching = false;
       let initialPinchDistance = 0;
       let initialScale = 1;
@@ -1007,18 +990,16 @@
         container.style.cursor = 'grab';
       });
 
-      // 3. 모바일 터치 이벤트 (한 손가락 이동 + 두 손가락 핀치 줌)
+      // 3. 모바일 터치 이벤트 (이동 + 핀치 줌)
       container.addEventListener('touchstart', (e) => {
         if (e.target.closest('.slot-caption')) return;
 
         if (e.touches.length === 1) {
-          // 한 손가락: 이동(Pan)
           isPanning = true;
           isPinching = false;
           startX = e.touches[0].clientX - posX;
           startY = e.touches[0].clientY - posY;
         } else if (e.touches.length === 2) {
-          // 두 손가락: 핀치 줌(Zoom)
           isPanning = false;
           isPinching = true;
           initialPinchDistance = getTouchDistance(e.touches);
@@ -1046,7 +1027,6 @@
           isPanning = false;
           isPinching = false;
         } else if (e.touches.length === 1) {
-          // 두 손가락 줌 하다가 손가락 하나 뗐을 때 위치 튀는 현상 방지
           isPinching = false;
           isPanning = true;
           startX = e.touches[0].clientX - posX;
@@ -1454,7 +1434,7 @@
 
     window.addEventListener('DOMContentLoaded', loadData);
 
-    // ===== 다운로드 (가로 1960px 고정, 세로는 내용에 맞게 자동 맞춤) =====
+    // ===== 다운로드 (가로 1960px 고정, 세로 높이 규격 제한 풀기) =====
     async function saveAsImage() {
       const scaler = document.getElementById('cardScaler');
       const cardEl = document.getElementById('card');
@@ -1476,13 +1456,10 @@
         await document.fonts.ready;
       }
 
-      // 3. 내용물 실제 높이 측정 후 가로 980px에 맞춰 캡처 (가로 고정 1960px 생성)
-      const actualHeight = cardEl.offsetHeight;
-
+      // 3. 가로 980px 고정 및 세로는 지정하지 않고 내용물 본래 비율대로 캡처
       html2canvas(cardEl, {
         scale: 2,
         width: 980,
-        height: actualHeight,
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false
